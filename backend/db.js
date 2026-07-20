@@ -76,6 +76,7 @@ const stmts = {
   findAnchorById: db.prepare('SELECT * FROM anchors WHERE id = ?'),
   findAnchorsByDocumentId: db.prepare('SELECT * FROM anchors WHERE document_id = ? ORDER BY created_at DESC'),
   findPendingAnchors: db.prepare("SELECT * FROM anchors WHERE status = 'pending'"),
+  statsQuery: db.prepare("SELECT COUNT(*) AS total, MAX(confirmed_at) AS lastConfirmedAt FROM anchors WHERE status = 'confirmed'"),
   updateAnchorStatus: db.prepare(`
     UPDATE anchors SET status = @status, confirmations_info = @confirmationsInfo,
       confirmed_at = @confirmedAt, last_checked_at = @lastCheckedAt WHERE kaspa_txid = @txid
@@ -108,6 +109,10 @@ const anchors = {
   },
   findPending() {
     return stmts.findPendingAnchors.all().map(anchorFromRow);
+  },
+  stats() {
+    const row = stmts.statsQuery.get();
+    return { total: row.total, lastConfirmedAt: row.lastConfirmedAt || null };
   },
   create({ documentId, txid, network, walletAddress, payloadHex }) {
     const row = {

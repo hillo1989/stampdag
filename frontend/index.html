@@ -34,6 +34,8 @@
 
 <main>
 
+  <div id="home-stats" class="muted" style="text-align:center; margin-bottom:16px;"></div>
+
   <!-- ANCHOR VIEW -->
   <section id="view-anchor" class="view active">
     <div class="card">
@@ -111,6 +113,7 @@
   <div data-i18n="footerDisclaimer">StampDAG ist ein technischer Zeitstempel-Nachweis, kein Ersatz für notarielle Beurkundung.</div>
   <div style="margin-top:6px;">
     <a href="/about.html" data-i18n="footerAbout">Wie funktioniert das?</a>
+    · <a href="/sicherheit.html" data-i18n="footerSecurity">Sicherheit & Transparenz</a>
     · <a href="/impressum.html">Impressum</a>
     · <a href="/datenschutz.html">Datenschutz</a>
   </div>
@@ -501,10 +504,25 @@
     }
   }
 
+  // ---------- home stats (trust/transparency) ----------
+  async function loadHomeStats() {
+    const el = $('#home-stats');
+    try {
+      const data = await api('/api/stats');
+      el.textContent = data.totalAnchors > 0
+        ? I18N.t('homeStats', { count: data.totalAnchors.toLocaleString(I18N.getLang() === 'de' ? 'de-DE' : 'en-US'), date: I18N.formatDate(data.lastAnchoredAt) })
+        : I18N.t('homeStatsEmpty');
+    } catch (e) {
+      el.textContent = '';
+    }
+  }
+  I18N.onChange(loadHomeStats);
+
   // ---------- boot ----------
   renderLangToggle();
   renderWalletArea();
   renderPayerNote();
+  loadHomeStats();
 
   // auto-verify from QR-code query params
   const params = new URLSearchParams(location.search);

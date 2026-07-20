@@ -443,6 +443,16 @@ app.get(
   })
 );
 
+// Public, no-auth counter shown on the homepage as a trust/transparency signal --
+// only aggregate counts, never anything document- or user-identifying.
+app.get(
+  '/api/stats',
+  asyncHandler(async (req, res) => {
+    const stats = await db.anchors.stats();
+    res.json({ totalAnchors: stats.total, lastAnchoredAt: stats.lastConfirmedAt });
+  })
+);
+
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND_DIR));
 

@@ -117,6 +117,11 @@ const anchors = {
     const res = await query("SELECT * FROM anchors WHERE status = 'pending'");
     return res.rows.map(anchorFromRow);
   },
+  async stats() {
+    await schemaReady;
+    const res = await query("SELECT COUNT(*) AS total, MAX(confirmed_at) AS last_confirmed_at FROM anchors WHERE status = 'confirmed'");
+    return { total: parseInt(res.rows[0].total, 10), lastConfirmedAt: res.rows[0].last_confirmed_at || null };
+  },
   async create({ documentId, txid, network, walletAddress, payloadHex }) {
     await schemaReady;
     const id = crypto.randomUUID();

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sicherheit & Transparenz — StampDAG</title>
+<meta name="description" content="Warum du StampDAG vertrauen kannst, ohne StampDAG vertrauen zu müssen — der Sicherheits- und Transparenzansatz im Detail.">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0B1A2A">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body data-title-key="pageTitleSecurity">
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <a href="/" style="display:flex; align-items:center; gap:10px; color:inherit;">
+        <div class="logo">S</div>
+        <div>
+          <h1 data-i18n="brandTitle">StampDAG</h1>
+          <p data-i18n="brandTagline">Proof of Existence auf der Kaspa BlockDAG</p>
+        </div>
+      </a>
+    </div>
+    <div class="header-actions">
+      <button id="lang-toggle" class="chip" type="button">DE</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h2 data-i18n="secHeroTitle">Vertrau nicht uns — prüf es selbst</h2>
+    <p data-i18n="secHeroBody">StampDAG ist so gebaut, dass du dem Dienst so wenig wie möglich vertrauen musst. Hier steht im Detail, was das technisch bedeutet.</p>
+  </div>
+
+  <div class="section-title" data-i18n="secPrinciplesTitle">Grundprinzipien</div>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div><div class="t" data-i18n="secP1t">Dein Dokument verlässt nie den Browser</div><div class="d" data-i18n="secP1d">...</div></div></div>
+    <div class="step"><div class="n">2</div><div><div class="t" data-i18n="secP2t">Unabhängig nachprüfbar, ohne uns zu fragen</div><div class="d" data-i18n="secP2d">...</div></div></div>
+    <div class="step"><div class="n">3</div><div><div class="t" data-i18n="secP3t">Offenes, dokumentiertes Payload-Format</div><div class="d" data-i18n="secP3d">...</div></div></div>
+    <div class="step"><div class="n">4</div><div><div class="t" data-i18n="secP4t">Kein Zugriff auf deinen privaten Schlüssel</div><div class="d" data-i18n="secP4d">...</div></div></div>
+    <div class="step"><div class="n">5</div><div><div class="t" data-i18n="secP5t">Offener Quellcode</div><div class="d" data-i18n="secP5d">...</div></div></div>
+  </div>
+
+  <div class="section-title" data-i18n="secOpsTitle">Betrieb</div>
+  <div class="disclaimer-box" data-i18n="secOpsBody">...</div>
+
+  <div class="section-title" data-i18n="secStatsTitle">Live-Status</div>
+  <div class="disclaimer-box" id="live-stats">
+    <span class="spinner"></span>
+  </div>
+
+  <a class="back-link" href="/" data-i18n="backToApp">← Zurück zur App</a>
+</main>
+
+<footer>
+  <div data-i18n="footerDisclaimer">StampDAG ist ein technischer Zeitstempel-Nachweis, kein Ersatz für notarielle Beurkundung.</div>
+  <div style="margin-top:6px;"><a href="/impressum.html">Impressum</a> · <a href="/datenschutz.html">Datenschutz</a></div>
+</footer>
+
+<script src="/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (sel) => document.querySelector(sel);
+
+  function renderLangToggle() {
+    $('#lang-toggle').textContent = I18N.getLang().toUpperCase();
+  }
+  $('#lang-toggle').addEventListener('click', () => {
+    I18N.setLang(I18N.getLang() === 'de' ? 'en' : 'de');
+  });
+  I18N.onChange(() => { renderLangToggle(); loadStats(); });
+  renderLangToggle();
+
+  async function loadStats() {
+    const el = $('#live-stats');
+    try {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      el.innerHTML = I18N.t('secStatsBody', {
+        count: data.totalAnchors.toLocaleString(I18N.getLang() === 'de' ? 'de-DE' : 'en-US'),
+        date: I18N.formatDate(data.lastAnchoredAt),
+      });
+    } catch (e) {
+      el.textContent = I18N.t('secStatsError');
+    }
+  }
+  loadStats();
+})();
+</script>
+</body>
+</html>
