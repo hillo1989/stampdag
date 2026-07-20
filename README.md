@@ -59,8 +59,11 @@ Anker-Wallet und Abhängigkeiten beim ersten Start automatisch ein.
 - `JWT_SECRET` — Signierschlüssel für Wallet-Login-Sessions (erforderlich, kein
   Default — Server startet ohne diesen Wert nicht)
 - `DB_DRIVER` — `sqlite` (Standard) oder `postgres` (zusätzlich `DATABASE_URL` setzen)
-- `RATE_LIMIT_ANCHOR_MAX` — Limit für `/api/anchor` bzw. `/api/anchor/self` pro
-  IP/15min (Standard: 5)
+- `RATE_LIMIT_ANCHOR_MAX` — Limit für `/api/anchor` (Plattform-Wallet zahlt) pro
+  IP/15min (Standard: 5) — bewusst knapp, da der Betreiber jede Verankerung bezahlt
+- `RATE_LIMIT_SELF_ANCHOR_MAX` — Limit für `/api/anchor/self` (Nutzer-Wallet zahlt)
+  pro IP/15min (Standard: 60) — großzügiger, da diese Verankerungen den Betreiber
+  nichts kosten
 - `RATE_LIMIT_AUTH_MAX` — Limit für `/api/auth/*` pro IP/15min (Standard: 20)
 
 ## Umstieg auf Mainnet
@@ -99,6 +102,26 @@ anmelden und Verankerungen direkt aus der eigenen Wallet bezahlen:
    unabhängig, bevor es die Verankerung speichert
 
 Ohne Login läuft alles unverändert über die Plattform-Wallet.
+
+## Tests
+
+```bash
+cd backend
+npm test              # vitest: 31 Tests, ~1s, kein Netzwerk/echtes Geld nötig
+npm run test:watch    # bei Codeänderungen automatisch neu laufen lassen
+```
+
+Läuft komplett gegen eine eigene, nie befüllte Testnet-Wallet (`tests/fixtures/`,
+niemals gegen die echte `.env`) und mockt jede Funktion, die die Blockchain
+anfassen würde — kann also gefahrlos beliebig oft laufen. Abgedeckt: Payload-Format,
+Signaturprüfung (echte, gültige und gefälschte Signaturen), Validierung, Dedup-Logik,
+Wallet-Login-Flow (inkl. Single-Use-Challenge), On-Chain-Payload-Abgleich bei
+`/api/anchor/self` (inkl. Ablehnung bei Nichtübereinstimmung und Adress-Konflikt),
+sowie dass 500er-Fehler keine internen Details preisgeben.
+
+`npm run e2e` (Playwright) ist als Skript vorbereitet, aber es existiert noch keine
+Konfiguration/Testdatei dafür — die App wurde bisher stattdessen manuell und per
+Skript gegen echtes Testnet/Mainnet durchgetestet.
 
 ## Out of Scope (bewusst, siehe Pflichtenheft-Roadmap)
 

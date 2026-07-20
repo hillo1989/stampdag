@@ -78,6 +78,17 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Self-pay anchors (/api/anchor/self) don't cost the operator anything -- the caller's
+// own wallet pays the network fee -- so they get their own, more generous limit
+// instead of sharing anchorLimiter's tight budget with the operator-funded path.
+// Still capped to bound DB/indexer load from a single IP, just not as strictly.
+const selfAnchorLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_SELF_ANCHOR_MAX, 10) || 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 function validate(schema, data) {
   const result = schema.safeParse(data);
   if (!result.success) {
@@ -255,7 +266,7 @@ app.post(
 app.post(
   '/api/anchor/self',
   authMiddleware,
-  anchorLimiter,
+  selfAnchorLimiter,
   asyncHandler(async (req, res) => {
     const { sha256Hash, filename, txid } = validate(SelfAnchorRequestSchema, req.body);
 
