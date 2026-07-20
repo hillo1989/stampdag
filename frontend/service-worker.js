@@ -4,8 +4,8 @@
 // - Stale-while-revalidate for the public Kaspa API
 // - Network-only for our own /api/* (real-time anchor/verify data, never cached)
 
-const STATIC_CACHE = 'stampdag-static-v4';
-const RUNTIME_CACHE = 'stampdag-runtime-v4';
+const STATIC_CACHE = 'stampdag-static-v5';
+const RUNTIME_CACHE = 'stampdag-runtime-v5';
 
 const STATIC_ASSETS = [
   '/', '/about.html', '/sicherheit.html', '/impressum.html', '/datenschutz.html',
