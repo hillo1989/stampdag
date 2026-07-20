@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StampDAG — Digitaler Dokumenten-Zeitstempel</title>
+<meta name="description" content="Verankere den SHA-256-Hash eines Dokuments (PDF, Bild oder Word) fälschungssicher auf der Kaspa BlockDAG.">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0B1A2A">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body data-title-key="pageTitleIndex">
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <h1 data-i18n="brandTitle">StampDAG</h1>
+        <p data-i18n="brandTagline">Proof of Existence auf der Kaspa BlockDAG</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="lang-toggle" class="chip" type="button">DE</button>
+      <div id="wallet-area"></div>
+    </div>
+  </div>
+  <nav>
+    <button data-view="anchor" class="active" data-i18n="navAnchor">Verankern</button>
+    <button data-view="verify" data-i18n="navVerify">Verifizieren</button>
+    <button data-view="history" data-i18n="navHistory">Verlauf</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ANCHOR VIEW -->
+  <section id="view-anchor" class="view active">
+    <div class="card">
+      <div id="dropzone" class="dropzone">
+        <div class="icon" id="dropzone-icon">📄</div>
+        <p><strong data-i18n="dropzoneTitle">Dokument hierher ziehen</strong> <span data-i18n="dropzoneSub">oder klicken zum Auswählen</span></p>
+        <p data-i18n="dropzonePrivacy">Der Dokumenteninhalt verlässt niemals deinen Browser — nur der Hash wird gesendet.</p>
+        <p class="formats" data-i18n="dropzoneFormats">PDF, Bilder (JPG, PNG, WebP), Word (DOCX, DOC)</p>
+      </div>
+      <input type="file" id="file-input">
+
+      <div id="hash-section" style="display:none; margin-top:16px;">
+        <label class="small" data-i18n="hashLabel">SHA-256 Hash</label>
+        <div class="hash-box" id="hash-value"></div>
+        <div class="muted" id="file-meta" style="margin-top:8px;"></div>
+        <div class="payer-note" id="payer-note"></div>
+        <button class="primary" id="anchor-btn" data-i18n="anchorBtn">Auf Kaspa BlockDAG verankern</button>
+      </div>
+
+      <div id="anchor-result" style="display:none; margin-top:16px;">
+        <div class="row">
+          <span class="small" data-i18n="statusLabel">Status</span>
+          <span id="anchor-status-pill" class="status-pill status-pending">Ausstehend</span>
+        </div>
+        <div class="row"><span class="small" data-i18n="txidLabel">Transaktions-ID</span></div>
+        <div class="hash-box" id="anchor-txid"></div>
+        <div class="row" style="margin-top:10px;">
+          <a id="anchor-explorer-link" href="#" target="_blank" rel="noopener" data-i18n="explorerLink">Im Explorer ansehen ↗</a>
+          <a id="anchor-cert-link" href="#" target="_blank" rel="noopener" style="display:none;" data-i18n="certLink">Zertifikat herunterladen ↓</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERIFY VIEW -->
+  <section id="view-verify" class="view">
+    <div class="card">
+      <div class="tabs">
+        <button data-tab="upload" class="active" data-i18n="tabUpload">Dokument hochladen</button>
+        <button data-tab="manual" data-i18n="tabManual">Hash / TXID eingeben</button>
+      </div>
+
+      <div id="verify-tab-upload" class="subview active">
+        <div id="verify-dropzone" class="dropzone">
+          <div class="icon" id="verify-dropzone-icon">🔍</div>
+          <p><strong data-i18n="dropzoneTitle">Dokument hierher ziehen</strong> <span data-i18n="dropzoneSub">oder klicken zum Auswählen</span></p>
+          <p class="formats" data-i18n="dropzoneFormats">PDF, Bilder (JPG, PNG, WebP), Word (DOCX, DOC)</p>
+        </div>
+        <input type="file" id="verify-file-input">
+      </div>
+
+      <div id="verify-tab-manual" class="subview">
+        <label class="small" data-i18n="verifyManualLabel">SHA-256 Hash oder Transaktions-ID</label>
+        <input type="text" id="verify-manual-input" data-i18n-attr="placeholder:verifyManualPlaceholder" placeholder="z. B. a1b2c3... oder Kaspa TXID">
+        <button class="primary" id="verify-manual-btn" data-i18n="verifyBtn">Prüfen</button>
+      </div>
+
+      <div id="verify-result"></div>
+    </div>
+  </section>
+
+  <!-- HISTORY VIEW -->
+  <section id="view-history" class="view">
+    <div class="card">
+      <p class="muted" id="history-intro" style="margin-top:0;" data-i18n="historyIntro">
+        Dieser Verlauf wird nur lokal in deinem Browser gespeichert.
+      </p>
+      <div id="history-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div data-i18n="footerDisclaimer">StampDAG ist ein technischer Zeitstempel-Nachweis, kein Ersatz für notarielle Beurkundung.</div>
+  <div style="margin-top:6px;"><a href="/about.html" data-i18n="footerAbout">Wie funktioniert das?</a></div>
+</footer>
+
+<script src="/i18n.js"></script>
+<script src="/wallet.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const API = ''; // same-origin
+  const HISTORY_KEY = 'kaspanotar_history'; // unchanged storage key -- rebrand is display-only, keeps existing local history intact
+  const HISTORY_SCHEMA_VERSION = 1;
+  const HISTORY_MAX = 200;
+
+  const ALLOWED_TYPES = [
+    { ext: 'pdf', mime: 'application/pdf', icon: '📄' },
+    { ext: 'jpg', mime: 'image/jpeg', icon: '🖼️' },
+    { ext: 'jpeg', mime: 'image/jpeg', icon: '🖼️' },
+    { ext: 'png', mime: 'image/png', icon: '🖼️' },
+    { ext: 'webp', mime: 'image/webp', icon: '🖼️' },
+    { ext: 'docx', mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', icon: '📝' },
+    { ext: 'doc', mime: 'application/msword', icon: '📝' },
+  ];
+  const ACCEPT_ATTR = ALLOWED_TYPES.map((t) => '.' + t.ext).concat(ALLOWED_TYPES.map((t) => t.mime)).join(',');
+
+  function extOf(filename) {
+    const m = /\.([a-z0-9]+)$/i.exec(filename || '');
+    return m ? m[1].toLowerCase() : '';
+  }
+
+  function isAllowedFile(file) {
+    return ALLOWED_TYPES.some((t) => t.ext === extOf(file.name));
+  }
+
+  function iconFor(filename) {
+    const t = ALLOWED_TYPES.find((t) => t.ext === extOf(filename));
+    return t ? t.icon : '📄';
+  }
+
+  // ---------- helpers ----------
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  $('#file-input').setAttribute('accept', ACCEPT_ATTR);
+  $('#verify-file-input').setAttribute('accept', ACCEPT_ATTR);
+
+  async function api(path, opts) {
+    const res = await fetch(API + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  }
+
+  async function hashFile(file) {
+    const buf = await file.arrayBuffer();
+    const digest = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function formatBytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  function shortAddr(addr) {
+    return addr && addr.length > 18 ? addr.slice(0, 10) + '…' + addr.slice(-6) : addr;
+  }
+
+  // ---------- history (localStorage) ----------
+  function loadHistory() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+      if (raw.schemaVersion !== HISTORY_SCHEMA_VERSION || !Array.isArray(raw.entries)) return [];
+      return raw.entries;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveHistory(entries) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify({ schemaVersion: HISTORY_SCHEMA_VERSION, entries: entries.slice(0, HISTORY_MAX) }));
+  }
+
+  function addHistoryEntry(entry) {
+    const entries = loadHistory();
+    entries.unshift(entry);
+    saveHistory(entries);
+  }
+
+  function updateHistoryEntry(txid, patch) {
+    const entries = loadHistory();
+    const idx = entries.findIndex((e) => e.txid === txid);
+    if (idx !== -1) {
+      entries[idx] = { ...entries[idx], ...patch };
+      saveHistory(entries);
+    }
+  }
+
+  function renderHistory() {
+    const entries = loadHistory();
+    const list = $('#history-list');
+    if (!entries.length) {
+      list.innerHTML = `<div class="empty">${escapeHtml(I18N.t('historyEmpty'))}</div>`;
+      return;
+    }
+    list.innerHTML = entries.map((e) => `
+      <div class="history-item" data-txid="${escapeHtml(e.txid)}">
+        <div class="hh">
+          <span class="fn">${iconFor(e.filename || '')} ${escapeHtml(e.filename || I18N.t('unnamedDoc'))}</span>
+          <span class="status-pill status-${escapeHtml(e.status)}">${statusLabel(e.status)}</span>
+        </div>
+        <div class="meta">${I18N.formatDate(e.anchoredAt)} · ${escapeHtml(e.network)}${e.paidBy === 'self' ? ' · ' + escapeHtml(shortAddr(e.walletAddress || '')) : ''}</div>
+        <div class="meta" style="font-family: ui-monospace, monospace; margin-top:2px;">${escapeHtml(e.sha256Hash.slice(0, 24))}…</div>
+        <div class="actions">
+          <a href="#" class="recheck-link" data-txid="${escapeHtml(e.txid)}">${escapeHtml(I18N.t('recheckLink'))}</a>
+          <a href="${escapeHtml(explorerUrlFor(e))}" target="_blank" rel="noopener">${escapeHtml(I18N.t('explorerShort'))}</a>
+          <a href="/api/certificate/${escapeHtml(e.anchorId)}?lang=${I18N.getLang()}" target="_blank" rel="noopener">${escapeHtml(I18N.t('certShort'))}</a>
+        </div>
+      </div>
+    `).join('');
+
+    $$('.recheck-link').forEach((link) => {
+      link.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        const txid = link.dataset.txid;
+        try {
+          const data = await api(`/api/anchor/${encodeURIComponent(txid)}`);
+          updateHistoryEntry(txid, { status: data.status });
+          renderHistory();
+        } catch (e) {
+          alert(I18N.t('recheckFailed', { msg: e.message }));
+        }
+      });
+    });
+  }
+
+  function explorerUrlFor(e) {
+    const base = e.network === 'mainnet' ? 'https://explorer.kaspa.org' : 'https://explorer-tn10.kaspa.org';
+    return `${base}/txs/${e.txid}`;
+  }
+
+  function statusLabel(status) {
+    return { pending: I18N.t('statusPending'), confirmed: I18N.t('statusConfirmed'), failed: I18N.t('statusFailed') }[status] || status;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // ---------- navigation ----------
+  function switchView(view) {
+    $$('nav button').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
+    $$('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + view));
+    if (view === 'history') renderHistory();
+  }
+  $$('nav button').forEach((b) => b.addEventListener('click', () => switchView(b.dataset.view)));
+
+  function switchVerifyTab(tab) {
+    $$('.tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+    $$('.subview').forEach((v) => v.classList.toggle('active', v.id === 'verify-tab-' + tab));
+  }
+  $$('.tabs button').forEach((b) => b.addEventListener('click', () => switchVerifyTab(b.dataset.tab)));
+
+  // ---------- wallet area ----------
+  function renderWalletArea() {
+    const el = $('#wallet-area');
+    if (!window.StampWallet || !window.StampWallet.hasKasware()) {
+      el.innerHTML = `<a class="chip" href="https://www.kasware.xyz/" target="_blank" rel="noopener">${escapeHtml(I18N.t('walletInstall'))}</a>`;
+      return;
+    }
+    const session = window.StampWallet.getSession();
+    if (session) {
+      el.innerHTML = `
+        <button class="chip" id="wallet-address-chip" type="button" title="${escapeHtml(session.kaspaAddress)}">🟢 ${escapeHtml(shortAddr(session.kaspaAddress))}</button>
+        <button class="chip" id="wallet-logout-btn" type="button">${escapeHtml(I18N.t('walletLogout'))}</button>
+      `;
+      $('#wallet-logout-btn').addEventListener('click', () => {
+        window.StampWallet.logout();
+        renderWalletArea();
+        renderPayerNote();
+      });
+    } else {
+      el.innerHTML = `<button class="chip" id="wallet-login-btn" type="button">${escapeHtml(I18N.t('walletLoginBtn'))}</button>`;
+      $('#wallet-login-btn').addEventListener('click', async () => {
+        const btn = $('#wallet-login-btn');
+        btn.disabled = true;
+        btn.textContent = I18N.t('walletConnecting');
+        try {
+          await window.StampWallet.login();
+          renderWalletArea();
+          renderPayerNote();
+        } catch (e) {
+          alert(I18N.t('walletLoginFailed', { msg: e.message }));
+          renderWalletArea();
+        }
+      });
+    }
+  }
+
+  function renderPayerNote() {
+    const el = $('#payer-note');
+    if (!el) return;
+    if (window.StampWallet && window.StampWallet.isLoggedIn()) {
+      const session = window.StampWallet.getSession();
+      el.innerHTML = I18N.t('payerNoteSelf', { address: escapeHtml(shortAddr(session.kaspaAddress)) });
+    } else {
+      el.innerHTML = I18N.t('payerNotePlatform');
+    }
+  }
+
+  // ---------- lang toggle ----------
+  function renderLangToggle() {
+    $('#lang-toggle').textContent = I18N.getLang().toUpperCase();
+  }
+  $('#lang-toggle').addEventListener('click', () => {
+    I18N.setLang(I18N.getLang() === 'de' ? 'en' : 'de');
+  });
+  I18N.onChange(() => {
+    renderLangToggle();
+    renderWalletArea();
+    renderPayerNote();
+    if ($('#view-history').classList.contains('active')) renderHistory();
+  });
+
+  // ---------- anchor view ----------
+  let selectedFile = null;
+  let selectedHash = null;
+
+  function setupDropzone(zoneEl, inputEl, onFile) {
+    zoneEl.addEventListener('click', () => inputEl.click());
+    inputEl.addEventListener('change', () => {
+      if (inputEl.files[0]) onFile(inputEl.files[0]);
+    });
+    ['dragenter', 'dragover'].forEach((evt) =>
+      zoneEl.addEventListener(evt, (e) => { e.preventDefault(); zoneEl.classList.add('drag'); })
+    );
+    ['dragleave', 'drop'].forEach((evt) =>
+      zoneEl.addEventListener(evt, (e) => { e.preventDefault(); zoneEl.classList.remove('drag'); })
+    );
+    zoneEl.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files[0];
+      if (file) onFile(file);
+    });
+  }
+
+  setupDropzone($('#dropzone'), $('#file-input'), async (file) => {
+    if (!isAllowedFile(file)) {
+      alert(I18N.t('invalidFileType'));
+      return;
+    }
+    $('#dropzone-icon').textContent = iconFor(file.name);
+    selectedFile = file;
+    $('#hash-section').style.display = 'block';
+    $('#anchor-result').style.display = 'none';
+    $('#hash-value').textContent = 'Wird berechnet…';
+    $('#file-meta').textContent = '';
+    renderPayerNote();
+    selectedHash = await hashFile(file);
+    $('#hash-value').textContent = selectedHash;
+    $('#file-meta').textContent = `${file.name} · ${formatBytes(file.size)}`;
+  });
+
+  $('#anchor-btn').addEventListener('click', async () => {
+    if (!selectedHash) return;
+    const btn = $('#anchor-btn');
+    const loggedIn = window.StampWallet && window.StampWallet.isLoggedIn();
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> ${escapeHtml(I18N.t(loggedIn ? 'anchoringSelf' : 'anchoring'))}`;
+    try {
+      const filename = selectedFile ? selectedFile.name : undefined;
+      const data = loggedIn
+        ? await window.StampWallet.anchorSelf(selectedHash, filename)
+        : await api('/api/anchor', { method: 'POST', body: JSON.stringify({ sha256Hash: selectedHash, filename }) });
+
+      showAnchorResult(data);
+      addHistoryEntry({
+        anchorId: data.anchorId,
+        documentId: data.documentId,
+        sha256Hash: data.sha256Hash,
+        filename: filename || null,
+        txid: data.txid,
+        network: data.network,
+        anchoredAt: data.submittedAt,
+        status: data.status,
+        paidBy: loggedIn ? 'self' : 'platform',
+        walletAddress: loggedIn ? window.StampWallet.getSession().kaspaAddress : null,
+      });
+      pollAnchorStatus(data.txid);
+    } catch (e) {
+      alert(I18N.t(loggedIn ? 'selfAnchorFailed' : 'anchorFailed', { msg: e.message }));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = I18N.t('anchorBtn');
+    }
+  });
+
+  function showAnchorResult(data) {
+    $('#anchor-result').style.display = 'block';
+    setStatusPill($('#anchor-status-pill'), data.status);
+    $('#anchor-txid').textContent = data.txid;
+    $('#anchor-explorer-link').href = data.explorerUrl;
+    const certLink = $('#anchor-cert-link');
+    certLink.href = `/api/certificate/${data.anchorId}?lang=${I18N.getLang()}`;
+    certLink.style.display = data.status === 'confirmed' ? 'inline' : 'none';
+  }
+
+  function setStatusPill(el, status) {
+    el.className = 'status-pill status-' + status;
+    el.textContent = statusLabel(status);
+  }
+
+  async function pollAnchorStatus(txid, attempt = 0) {
+    if (attempt > 20) return; // ~60s cap
+    try {
+      const data = await api(`/api/anchor/${encodeURIComponent(txid)}`);
+      if ($('#anchor-txid').textContent === txid) {
+        setStatusPill($('#anchor-status-pill'), data.status);
+        if (data.status === 'confirmed') {
+          $('#anchor-cert-link').style.display = 'inline';
+        }
+      }
+      updateHistoryEntry(txid, { status: data.status });
+      if (data.status === 'pending') {
+        setTimeout(() => pollAnchorStatus(txid, attempt + 1), 3000);
+      }
+    } catch (e) {
+      // silent — user can still re-check manually later
+    }
+  }
+
+  // ---------- verify view ----------
+  setupDropzone($('#verify-dropzone'), $('#verify-file-input'), async (file) => {
+    if (!isAllowedFile(file)) {
+      alert(I18N.t('invalidFileType'));
+      return;
+    }
+    $('#verify-dropzone-icon').textContent = iconFor(file.name);
+    const hash = await hashFile(file);
+    $('#verify-manual-input').value = hash;
+    runVerify({ sha256Hash: hash });
+  });
+
+  $('#verify-manual-btn').addEventListener('click', () => {
+    const raw = $('#verify-manual-input').value.trim();
+    if (!raw) return;
+    // Kaspa TXIDs and SHA-256 hashes are both 64-char hex strings and indistinguishable
+    // by shape alone -- send both candidate fields when ambiguous and let the backend
+    // try both lookups, rather than guessing which one the pasted value is.
+    const looksLikeHex64 = /^[a-f0-9]{64}$/i.test(raw);
+    runVerify(looksLikeHex64 ? { sha256Hash: raw.toLowerCase(), txid: raw } : { txid: raw });
+  });
+
+  async function runVerify(body) {
+    const box = $('#verify-result');
+    box.innerHTML = `<p class="muted"><span class="spinner"></span> ${escapeHtml(I18N.t('verifying'))}</p>`;
+    try {
+      const data = await api('/api/verify', { method: 'POST', body: JSON.stringify(body) });
+      if (data.matched) {
+        box.innerHTML = `
+          <div class="result-box result-match">
+            <strong>${escapeHtml(I18N.t('matchTitle'))}</strong>
+            <p class="muted" style="margin:8px 0 0;">
+              ${I18N.t('matchBody', {
+                date: I18N.formatDate(data.anchoredAt),
+                txid: `<a href="${escapeHtml(data.explorerUrl)}" target="_blank" rel="noopener">${escapeHtml(data.txid.slice(0, 20))}…</a>`,
+                status: statusLabel(data.status),
+              })}
+            </p>
+            <p class="muted" style="margin:10px 0 0;">
+              <a href="${escapeHtml(data.certificateUrl)}?lang=${I18N.getLang()}" target="_blank" rel="noopener">${escapeHtml(I18N.t('certLink'))}</a>
+            </p>
+          </div>`;
+      } else {
+        box.innerHTML = `
+          <div class="result-box result-nomatch">
+            <strong>${escapeHtml(I18N.t('noMatchTitle'))}</strong>
+            <p class="muted" style="margin:8px 0 0;">${escapeHtml(I18N.t('noMatchBody'))}</p>
+          </div>`;
+      }
+    } catch (e) {
+      box.innerHTML = `<p class="muted">${escapeHtml(I18N.t('verifyError', { msg: e.message }))}</p>`;
+    }
+  }
+
+  // ---------- boot ----------
+  renderLangToggle();
+  renderWalletArea();
+  renderPayerNote();
+
+  // auto-verify from QR-code query params
+  const params = new URLSearchParams(location.search);
+  if (params.get('verify') === '1' && (params.get('hash') || params.get('txid'))) {
+    switchView('verify');
+    switchVerifyTab('manual');
+    const val = params.get('hash') || params.get('txid');
+    $('#verify-manual-input').value = val;
+    runVerify(params.get('hash') ? { sha256Hash: params.get('hash') } : { txid: params.get('txid') });
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

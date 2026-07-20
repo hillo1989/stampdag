@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wie StampDAG funktioniert</title>
+<meta name="description" content="Wie StampDAG Dokumente auf der Kaspa BlockDAG verankert, und wofür das nützlich ist.">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0B1A2A">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body data-title-key="pageTitleAbout">
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <a href="/" style="display:flex; align-items:center; gap:10px; color:inherit;">
+        <div class="logo">S</div>
+        <div>
+          <h1 data-i18n="brandTitle">StampDAG</h1>
+          <p data-i18n="brandTagline">Proof of Existence auf der Kaspa BlockDAG</p>
+        </div>
+      </a>
+    </div>
+    <div class="header-actions">
+      <button id="lang-toggle" class="chip" type="button">DE</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h2 data-i18n="aboutHeroTitle">Ein Zeitstempel, der auf der Blockchain lebt</h2>
+    <p data-i18n="aboutHeroBody">StampDAG verankert den digitalen Fingerabdruck (Hash) eines Dokuments auf der Kaspa BlockDAG.</p>
+  </div>
+
+  <div class="section-title" data-i18n="howItWorksTitle">So funktioniert es</div>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div><div class="t" data-i18n="step1t">Dokument auswählen</div><div class="d" data-i18n="step1d">...</div></div></div>
+    <div class="step"><div class="n">2</div><div><div class="t" data-i18n="step2t">Hash lokal berechnen</div><div class="d" data-i18n="step2d">...</div></div></div>
+    <div class="step"><div class="n">3</div><div><div class="t" data-i18n="step3t">Auf der Kaspa BlockDAG verankern</div><div class="d" data-i18n="step3d">...</div></div></div>
+    <div class="step"><div class="n">4</div><div><div class="t" data-i18n="step4t">Zertifikat erhalten</div><div class="d" data-i18n="step4d">...</div></div></div>
+    <div class="step"><div class="n">5</div><div><div class="t" data-i18n="step5t">Jederzeit unabhängig verifizierbar</div><div class="d" data-i18n="step5d">...</div></div></div>
+  </div>
+
+  <div class="section-title" data-i18n="whyTitle">Wofür ist das nützlich?</div>
+  <div class="usecase-grid">
+    <div class="usecase"><div class="icon">📑</div><h3 data-i18n="uc1t">Kaufverträge & Angebote</h3><p data-i18n="uc1d">...</p></div>
+    <div class="usecase"><div class="icon">🎨</div><h3 data-i18n="uc2t">Geistiges Eigentum</h3><p data-i18n="uc2d">...</p></div>
+    <div class="usecase"><div class="icon">🤝</div><h3 data-i18n="uc3t">NDAs & Vertraulichkeit</h3><p data-i18n="uc3d">...</p></div>
+    <div class="usecase"><div class="icon">✅</div><h3 data-i18n="uc4t">Compliance-Stände</h3><p data-i18n="uc4d">...</p></div>
+    <div class="usecase"><div class="icon">📜</div><h3 data-i18n="uc5t">Testament- & Vollmacht-Entwürfe</h3><p data-i18n="uc5d">...</p></div>
+    <div class="usecase"><div class="icon">👥</div><h3 data-i18n="uc6t">Vereinbarungen unter Privatpersonen</h3><p data-i18n="uc6d">...</p></div>
+  </div>
+
+  <div class="section-title" data-i18n="legalTitle">Rechtlicher Hinweis</div>
+  <div class="disclaimer-box" data-i18n="legalText">...</div>
+
+  <a class="back-link" href="/" data-i18n="backToApp">← Zurück zur App</a>
+</main>
+
+<footer>
+  <div data-i18n="footerDisclaimer">StampDAG ist ein technischer Zeitstempel-Nachweis, kein Ersatz für notarielle Beurkundung.</div>
+</footer>
+
+<script src="/i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (sel) => document.querySelector(sel);
+  function renderLangToggle() {
+    $('#lang-toggle').textContent = I18N.getLang().toUpperCase();
+  }
+  $('#lang-toggle').addEventListener('click', () => {
+    I18N.setLang(I18N.getLang() === 'de' ? 'en' : 'de');
+  });
+  I18N.onChange(renderLangToggle);
+  renderLangToggle();
+})();
+</script>
+</body>
+</html>

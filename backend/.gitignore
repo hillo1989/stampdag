@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.db
+*.db-shm
+*.db-wal
+anchor-wallet*.keystore.json
+anchor-wallet*.SEED-BACKUP.txt
+test-results/
+playwright-report/

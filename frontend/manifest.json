@@ -1,0 +1,21 @@
+{
+  "name": "StampDAG — Digitaler Dokumenten-Zeitstempel",
+  "short_name": "StampDAG",
+  "description": "Verankere den SHA-256-Hash eines Dokuments (PDF, Bild oder Word) fälschungssicher auf der Kaspa BlockDAG.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#0B0F14",
+  "theme_color": "#0B1A2A",
+  "orientation": "portrait",
+  "lang": "de",
+  "dir": "ltr",
+  "id": "stampdag-app",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
