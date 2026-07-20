@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Datenschutzerklärung — StampDAG</title>
+<meta name="robots" content="noindex">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0B1A2A">
+<link rel="stylesheet" href="/shared.css">
+<style>.disclaimer-box h3 { margin: 0 0 8px; font-size: 13px; color: var(--text); } .disclaimer-box ul { margin: 8px 0; padding-left: 20px; } .disclaimer-box li { margin-bottom: 6px; }</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <a href="/" style="display:flex; align-items:center; gap:10px; color:inherit;">
+        <div class="logo">S</div>
+        <div>
+          <h1>StampDAG</h1>
+          <p>Proof of Existence auf der Kaspa BlockDAG</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h2>Datenschutzerklärung</h2>
+    <p class="muted">Stand: [DATUM]. Diese Erklärung beschreibt, welche Daten StampDAG verarbeitet und warum —
+      basierend auf der tatsächlichen technischen Funktionsweise der App. Vor Veröffentlichung juristisch prüfen lassen,
+      insbesondere die als [PLATZHALTER] markierten Stellen.</p>
+  </div>
+
+  <div class="section-title">1. Verantwortlicher</div>
+  <div class="disclaimer-box">
+    [PLATZHALTER — siehe <a href="/impressum.html">Impressum</a> für Name, Anschrift und Kontakt des Verantwortlichen
+    im Sinne von Art. 4 Nr. 7 DSGVO.]
+  </div>
+
+  <div class="section-title">2. Grundprinzip: dein Dokumentinhalt verlässt nie deinen Browser</div>
+  <div class="disclaimer-box">
+    Der SHA-256-Hash eines Dokuments wird ausschließlich lokal in deinem Browser berechnet
+    (<code>crypto.subtle.digest</code>). Der Dokumentinhalt selbst — Text, Bild- oder
+    Word-Datei — wird zu keinem Zeitpunkt an unsere Server oder an Dritte übertragen, dort
+    gespeichert oder verarbeitet.
+  </div>
+
+  <div class="section-title">3. Welche Daten wir verarbeiten</div>
+  <div class="disclaimer-box">
+    <h3>a) Beim Verankern eines Dokuments (Server, dauerhaft)</h3>
+    <ul>
+      <li><strong>SHA-256-Hash</strong> des Dokuments (nicht rückführbar auf den Inhalt)</li>
+      <li><strong>Dateiname</strong> — nur wenn du einen Namen eingibst/die Datei einen hat; rein kosmetisch, optional</li>
+      <li><strong>Kaspa-Transaktions-ID und Zeitstempel</strong> der Verankerung</li>
+      <li><strong>Kaspa-Wallet-Adresse</strong>, die die Verankerung bezahlt hat — bei anonymer Nutzung unsere eigene
+        Plattform-Adresse, bei Wallet-Login deine eigene Adresse</li>
+    </ul>
+    <h3>b) Bei Nutzung des Wallet-Logins</h3>
+    <ul>
+      <li>Deine <strong>Kaspa-Adresse</strong> (öffentlich, keine weiteren Identitätsdaten)</li>
+      <li>Ein Sitzungstoken (JWT), das 24 Stunden gültig ist und ausschließlich in deinem Browser
+        (<code>localStorage</code>) gespeichert wird — nicht auf unseren Servern</li>
+      <li>Wir erhalten und speichern zu keinem Zeitpunkt deinen privaten Schlüssel oder deine Seed-Phrase</li>
+    </ul>
+    <h3>c) Ausschließlich lokal in deinem Browser (verlässt das Gerät nie)</h3>
+    <ul>
+      <li>Sprachwahl (Deutsch/Englisch)</li>
+      <li>Dein persönlicher Verankerungs-Verlauf auf diesem Gerät — reine Komfortfunktion, jederzeit löschbar,
+        ohne dass die eigentliche Verankerung dadurch verschwindet</li>
+    </ul>
+    <h3>d) Server-Logs (technisch notwendig)</h3>
+    <ul>
+      <li>IP-Adresse, Zeitpunkt und aufgerufene Adresse jeder Anfrage — wie bei praktisch jedem Webserver,
+        zur Fehlerdiagnose und zum Schutz vor Missbrauch (Rate-Limiting)</li>
+    </ul>
+    <p class="muted" style="margin-top:12px;">Wir verwenden keine Cookies, kein Tracking und keine Analyse-Dienste
+      Dritter (z. B. Google Analytics).</p>
+  </div>
+
+  <div class="section-title">4. Wichtiger Hinweis: die Kaspa-Blockchain ist öffentlich und unveränderlich</div>
+  <div class="disclaimer-box">
+    Der Hash deines Dokuments wird — sobald verankert — dauerhaft und öffentlich auf der
+    Kaspa BlockDAG gespeichert, zusammen mit der zahlenden Wallet-Adresse und dem Zeitpunkt.
+    Das ist der gesamte Zweck des Dienstes: ein unabhängig überprüfbarer, fälschungssicherer
+    Nachweis. Das bedeutet aber auch: <strong>diese Daten können nachträglich nicht mehr
+    gelöscht oder geändert werden</strong> — auch nicht von uns. Ein „Recht auf Löschung"
+    (Art. 17 DSGVO) kann sich daher ausschließlich auf die bei uns serverseitig gespeicherte
+    Kopie (Hash, Dateiname, Zuordnung) beziehen, nicht auf den bereits verankerten
+    Blockchain-Eintrag selbst. [PLATZHALTER — diese Einordnung juristisch prüfen lassen.]
+  </div>
+
+  <div class="section-title">5. Rechtsgrundlage der Verarbeitung</div>
+  <div class="disclaimer-box">
+    Die Kernfunktion (Hash-Verankerung, Verifizierung) erfolgt zur Erbringung der von dir
+    angeforderten Leistung (Art. 6 Abs. 1 lit. b DSGVO). Server-Logs und Rate-Limiting
+    dienen unserem berechtigten Interesse an einem sicheren, funktionsfähigen Betrieb
+    (Art. 6 Abs. 1 lit. f DSGVO).
+  </div>
+
+  <div class="section-title">6. Empfänger und Drittanbieter</div>
+  <div class="disclaimer-box">
+    <ul>
+      <li><strong>Kaspa-Netzwerk</strong> — ein öffentliches, dezentrales Netzwerk ohne einzelnen Betreiber; der
+        verankerte Hash ist weltweit über öffentliche Explorer einsehbar</li>
+      <li><strong>Kasware</strong> (nur bei Wallet-Login) — eine Browser-Erweiterung eines Drittanbieters; es gilt
+        dessen eigene Datenschutzerklärung, sobald du sie verbindest</li>
+      <li><strong>Hosting-Anbieter</strong> [PLATZHALTER — Name/Sitz des Hosters ergänzen, ggf. Auftragsverarbeitungsvertrag]</li>
+    </ul>
+  </div>
+
+  <div class="section-title">7. Speicherdauer</div>
+  <div class="disclaimer-box">
+    Die serverseitig gespeicherten Verankerungsdaten (Hash, Dateiname, TXID, Wallet-Adresse)
+    bleiben grundsätzlich gespeichert, solange der Dienst betrieben wird — die Kernfunktion
+    (unabhängige Nachprüfbarkeit) setzt das voraus. Server-Logs werden [PLATZHALTER — Zeitraum
+    ergänzen, z. B. 30 Tage] aufbewahrt.
+  </div>
+
+  <div class="section-title">8. Deine Rechte</div>
+  <div class="disclaimer-box">
+    Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17,
+    mit der Einschränkung aus Punkt 4), Einschränkung der Verarbeitung (Art. 18),
+    Datenübertragbarkeit (Art. 20) sowie Widerspruch (Art. 21) und Beschwerde bei einer
+    Aufsichtsbehörde (Art. 77). Wende dich dazu an die Kontaktdaten im
+    <a href="/impressum.html">Impressum</a>.
+  </div>
+
+  <a class="back-link" href="/">← Zurück zur App</a>
+</main>
+
+<footer>
+  <div>StampDAG ist ein technischer Zeitstempel-Nachweis, kein Ersatz für notarielle Beurkundung.</div>
+  <div style="margin-top:6px;"><a href="/impressum.html">Impressum</a></div>
+</footer>
+
+</body>
+</html>
